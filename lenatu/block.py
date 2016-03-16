@@ -67,7 +67,7 @@ def visit(node, executed_in=None, defined_block=None):
         node.defined_block = defined_block
         
     for field, value in ast.iter_fields(node):
-        kind = SPECIAL.get((type(node), field), EXEC)
+        kind = CHILD_BLOCK.get((type(node), field), EXEC)
         
         if kind == EXEC:
             visit_helper(value, executed_in=executed_in, defined_block=None)
