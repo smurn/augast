@@ -1,0 +1,169 @@
+import re
+import ast
+def unindent(source):
+    """
+    Removes the indentation of the source code that is common to all lines.
+    
+    Does not work for all cases. Use for testing only.
+    """
+    
+    def normalize(line):
+        normalized = []
+        for i, c in enumerate(line):
+            if c == " ":
+                normalized.append(" ")
+            elif c == '\t':
+                normalized.append(8 * " ")
+            else:
+                normalized.append(line[i:])
+                break
+        return "".join(normalized)
+    
+    def min_indent(lines):
+        idendations = []
+        for line in lines:
+            if not line.strip():
+                continue
+            if line.strip().startswith("#"):
+                continue
+            idendations.append(count(line))
+        if not idendations:
+            return 0
+        else:
+            return min(idendations)
+            
+    def count(normalized):
+        count = 0
+        for c in normalized:
+            if c == ' ':
+                count += 1
+            else:
+                break
+        return count
+    
+    def trim(normalized, indent):
+        indent = min(count(normalized), indent)
+        return normalized[indent:]
+    
+    lines = [normalize(line) for line in source.splitlines()]
+    indent = min_indent(lines)    
+    return "\n".join(trim(line, indent) for line in lines)
+
+id_pattern = re.compile(r"\s*[a-zA-Z0-9_]+\s*")
+subscript_pattern = re.compile(r"\[(\s*[0-9]+)\s*\]")
+filter_pattern = re.compile(r"\{(\s*[a-zA-Z0-9_]+)\s*\}")
+
+def npath(node, path):
+    """
+    XPath inspired utility to find a specific node or attribute within
+    an AST.
+    
+    The path is an expression that is applied to the given node.
+    
+    Attribute access and indexing in case of lists works like in Python:
+    
+     * `.name`
+     * `[42]`
+     
+    It is also possible to filter for a specific expression or statement:
+     
+     * `[=]`
+     * `[+]`
+     * ...
+     
+     If there is only one node that matches, the result is a node, otherwise
+     a list of nodes.
+     
+     A single `*` returns all nodes reachable from the current node in
+     depth-first order.
+    """
+    
+    def check_empty(node, path):
+        if path:
+            return None, None
+        return 0, node
+    
+    def check_flatten(node, path):
+        if not path.startswith(".**"):
+            return None, None
+        
+        flat = []
+        
+        class Traverser(ast.NodeVisitor):
+            def visit(self, node):
+                flat.append(node)
+                return ast.NodeVisitor.visit(self, node)
+
+        Traverser().visit(node)
+        flat = flat[1:] # the first element is `node`
+        
+        return len(".**"), flat
+    
+    def check_attribute(node, path):
+        if not path.startswith("."):
+            return None, None
+        match = id_pattern.match(path, 1)
+        if not match:
+            raise ValueError("Invalid attribute name %r" % path)
+        name = match.group(0).strip()
+        
+        if not hasattr(node, name):
+            raise ValueError("%r has no attribute %r. Path is %r" %(node, name, path))
+        
+        return match.end(0), getattr(node, name)
+    
+    def check_subscript(node, path):
+        if not path.startswith("["):
+            return None, None
+        match = subscript_pattern.match(path)
+        if not match:
+            raise ValueError("Invalid subscript %r" % path)
+        index = int(match.group(1).strip())
+
+        return match.end(0), node[index]
+    
+    def check_filter(node, path):
+        if not path.startswith("{"):
+            return None, None
+        match = filter_pattern.match(path)
+        if not match:
+            raise ValueError("Invalid filter %r" % path)
+        criteria = match.group(1).strip()
+        
+        if not isinstance(node, list):
+            node = [node]
+        
+        result = [n for n in node if n.__class__.__name__ == criteria]
+        if not result:
+            raise ValueError("No node of type %r found. Nodes: %s" %(criteria, node))
+        
+        if len(result) == 1:
+            result = result[0]
+        
+        return match.end(0), result
+    
+
+        
+    pos, nxt = check_empty(node, path)
+    if pos is not None:
+        return nxt
+        
+    if pos is None:
+        pos, nxt = check_flatten(node, path)
+        
+    if pos is None:
+        pos, nxt = check_attribute(node, path)
+        
+    if pos is None:
+        pos, nxt = check_subscript(node, path)
+    
+    if pos is None:
+        pos, nxt = check_filter(node, path)
+    
+    if pos is None:
+        raise ValueError("Invalid npath: %r" % path)
+    
+    
+    return npath(nxt, path[pos:])
+        
+        
