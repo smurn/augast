@@ -90,12 +90,18 @@ def npath(node, path):
         flat = []
         
         class Traverser(ast.NodeVisitor):
+            def __init__(self, first):
+                self.first = first
             def visit(self, node):
-                flat.append(node)
+                if node is not self.first:
+                    flat.append(node)
                 return ast.NodeVisitor.visit(self, node)
-
-        Traverser().visit(node)
-        flat = flat[1:] # the first element is `node`
+        
+        if not isinstance(node, list):
+            node = [node]
+            
+        for n in node:
+            Traverser(n).visit(n)
         
         return len(".**"), flat
     

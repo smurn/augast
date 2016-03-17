@@ -208,6 +208,25 @@ class TestScope(unittest.TestCase):
                         ".defined_block", 
                         ".**{ExceptHandler}.name_block")
         
+    def test_generator_element(self):
+        src = """
+        def f():
+            (x for x in y)
+        """
+        self.assertSame(src, 
+                        ".**{GeneratorExp}.defined_block", 
+                        ".**{GeneratorExp}.elt.id_block")
+        
+    def test_generator_iterable(self):
+        src = """
+        def f(y):
+            (x for x in y)
+        """
+        self.assertSame(src, 
+                        ".**{name=f}.defined_block", 
+                        ".**{GeneratorExp}.generators.**{id=y}.id_block")
+        
+        
     def get(self, src, path):
         node = self.parse(src)
         return tools.npath(node, path)
