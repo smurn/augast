@@ -178,8 +178,12 @@ class BlockDetector(unittest.TestCase):
                         ".**{FunctionDef}.args.args[0].executed_in")
         
         
-    @tools.version("3.0+")
-    def test_arguments_vararg(self):
+    @tools.version("3.4+")
+    def test_arguments_args_vararg(self):
+        """
+        `vararg` only became a node in 3.4. it was an identifier attribute
+        on `arguments` before. Those are covered by test_scope.
+        """
         src = """
         def foo(*x):
             pass
@@ -217,8 +221,12 @@ class BlockDetector(unittest.TestCase):
                         ".**{FunctionDef}.executed_in", 
                         ".**{FunctionDef}.args.executed_in")
         
-    @tools.version("3.0+")
+    @tools.version("3.4+")
     def test_arguments_args_kwarg(self):
+        """
+        `kwarg` only became a node in 3.4. it was an identifier attribute
+        on `arguments` before. Those are covered by test_scope.
+        """
         src = """
         def foo(**x):
             pass
@@ -231,6 +239,35 @@ class BlockDetector(unittest.TestCase):
                         ".**{FunctionDef}.args.kwarg.executed_in")
         
     @tools.version("3.0+")
+    def test_arguments_vararg_annotation(self):
+        """
+        The way vararg and kwarg annotations were modelled in the AST changed
+        from 3.3 to 3.4, but this test should work for both.
+        """
+        src = """
+        def foo(*x:y):
+            pass
+        """
+        self.assertSame(src, 
+                        ".defined_block", 
+                        ".**{id=y}.executed_in")
+        
+    
+    @tools.version("3.0+")
+    def test_arguments_kwarg_annotation(self):
+        """
+        The way vararg and kwarg annotations were modelled in the AST changed
+        from 3.3 to 3.4, but this test should work for both.
+        """
+        src = """
+        def foo(**x:y):
+            pass
+        """
+        self.assertSame(src, 
+                        ".defined_block", 
+                        ".**{id=y}.executed_in")
+        
+    @tools.version("3.0+")
     def test_arg_annotation(self):
         src = """
         def foo(x:1+2):
@@ -241,6 +278,9 @@ class BlockDetector(unittest.TestCase):
                         ".**{arg}.annotation.executed_in")
         
     
+
+        
+        
               
     def get(self, src, path):
         node = self.parse(src)

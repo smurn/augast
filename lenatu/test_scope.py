@@ -70,8 +70,8 @@ class TestScope(unittest.TestCase):
                         ".**{FunctionDef}.defined_block", 
                         ".**{vararg=x}.vararg_block")
         
-    @tools.version("3.0+")
-    def test_vararg_P3(self):
+    @tools.version("3.4+")
+    def test_vararg_P34(self):
         src = """
         def f(*x):
             pass
@@ -79,6 +79,16 @@ class TestScope(unittest.TestCase):
         self.assertSame(src, 
                         ".**{FunctionDef}.defined_block", 
                         ".**{arg=x}.arg_block")
+        
+    @tools.version("3.0 3.1 3.2 3.3")
+    def test_vararg_P3(self):
+        src = """
+        def f(*x):
+            pass
+        """
+        self.assertSame(src, 
+                        ".**{FunctionDef}.defined_block", 
+                        ".**{arguments}.vararg_block")
         
     @tools.version("2.0+")
     def test_kwarg_P2(self):
@@ -90,8 +100,8 @@ class TestScope(unittest.TestCase):
                         ".**{FunctionDef}.defined_block", 
                         ".**{kwarg=x}.kwarg_block")
         
-    @tools.version("3.0+")
-    def test_kwarg_P3(self):
+    @tools.version("3.4+")
+    def test_kwarg_P34(self):
         src = """
         def f(**x):
             pass
@@ -99,6 +109,16 @@ class TestScope(unittest.TestCase):
         self.assertSame(src, 
                         ".**{FunctionDef}.defined_block", 
                         ".**{arg=x}.arg_block")
+        
+    @tools.version("3.0 3.1 3.2 3.3")
+    def test_kwarg_P30(self):
+        src = """
+        def f(**x):
+            pass
+        """
+        self.assertSame(src, 
+                        ".**{FunctionDef}.defined_block", 
+                        ".**{arguments}.kwarg_block")
         
     def test_default(self):
         src = """

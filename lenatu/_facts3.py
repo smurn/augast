@@ -57,12 +57,14 @@ if sys.version_info >= (3,0):
         (ast.GeneratorExp, "elt"):DEFINED,
         (ast.GeneratorExp, "generators"):DEFINED,
         (ast.arguments, "args"):MIXED,
-        (ast.arguments, "vararg"):MIXED,
         (ast.arguments, "kwonlyargs"):MIXED,
-        (ast.arguments, "kwarg"):MIXED,
         (ast.arg, "arg"):DEFINED,
     }
-    if hasattr(ast, "AsyncFunctionDef"): 
+    if sys.version_info >= (3,4):
+        CHILD_BLOCK[(ast.arguments, "vararg")] = MIXED
+        CHILD_BLOCK[(ast.arguments, "kwarg")] = MIXED
+        
+    if sys.version_info >= (3,5):
         # Python 3.5+
         for (t, f), k in dict(CHILD_BLOCK).items():
             if t == ast.FunctionDef:
@@ -113,6 +115,8 @@ if sys.version_info >= (3,0):
         ast.arg: lambda n:[("arg", ASSIGNED, DEFINED)],
         ast.alias: _alias_fields
     }
+    if sys.version_info <= (3,3):
+        NAME_FIELDS[ast.arguments] = lambda n:[("vararg", ASSIGNED, DEFINED), ("kwarg", ASSIGNED, DEFINED)]
     
     
     def is_local_variable(usages):
