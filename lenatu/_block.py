@@ -1,4 +1,4 @@
-from lenatu.facts import *  # @UnusedWildImport
+from lenatu._facts import *  # @UnusedWildImport
 
 class Block:
     """
@@ -27,7 +27,7 @@ class Block:
         return "Block(%r)" % self.defined_by
 
 
-def visit(node, executed_in=None, defined_block=None):
+def _visit(node, executed_in=None, defined_block=None):
     """
     :param node: The node we visit
     :param executed_in The block this node is executed in
@@ -78,29 +78,26 @@ def visit(node, executed_in=None, defined_block=None):
         kind = CHILD_BLOCK.get((type(node), field), EXEC)
         
         if kind == EXEC:
-            visit_helper(value, executed_in=executed_in, defined_block=None)
+            _visit_helper(value, executed_in=executed_in, defined_block=None)
         elif kind == DEFINED:
-            visit_helper(value, executed_in=defined_block, defined_block=None)
+            _visit_helper(value, executed_in=defined_block, defined_block=None)
         elif kind == MIXED:
-            visit_helper(value, executed_in=executed_in, defined_block=defined_block)
+            _visit_helper(value, executed_in=executed_in, defined_block=defined_block)
         else:
             raise ValueError("unexpected field kind %r" % kind)
 
 
-def visit_helper(value, executed_in=None, defined_block=None):
+def _visit_helper(value, executed_in=None, defined_block=None):
     if isinstance(value, list):
         for v in value:
-            visit_helper(v, executed_in=executed_in, defined_block=defined_block)
+            _visit_helper(v, executed_in=executed_in, defined_block=defined_block)
     
     elif isinstance(value, ast.AST):
-        visit(value, executed_in=executed_in, defined_block=defined_block)
+        _visit(value, executed_in=executed_in, defined_block=defined_block)
 
 
 def augment_blocks(node):
     """
     Analyze the AST add/overwrite the attributes described in the documentation.
     """
-    visit(node)
-
-                
-__all__ = ["augment"]
+    _visit(node)

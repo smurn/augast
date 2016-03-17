@@ -1,5 +1,5 @@
 import ast
-from lenatu import facts
+from lenatu import _facts as facts
 import collections
 
 
