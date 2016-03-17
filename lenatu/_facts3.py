@@ -115,7 +115,7 @@ if sys.version_info >= (3,0):
         ast.arg: lambda n:[("arg", ASSIGNED, DEFINED)],
         ast.alias: _alias_fields
     }
-    if sys.version_info <= (3,3):
+    if sys.version_info < (3,4):
         NAME_FIELDS[ast.arguments] = lambda n:[("vararg", ASSIGNED, DEFINED), ("kwarg", ASSIGNED, DEFINED)]
     
     
