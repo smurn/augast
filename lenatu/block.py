@@ -12,11 +12,19 @@ class Block:
     .. attribute:: defined_by
     
         Node that defines this block. For example a `ast.Function` or `ast.Module`.
+        
+    .. attribute:: local_variables
+    
+        Identifiers of variables local to this block.
     """
     
     def __init__(self, defined_by):
         self.defined_by = defined_by
+        self.local_variables = None
 
+        
+    def __repr__(self):
+        return "Block(%r)" % self.defined_by
 
 
 def visit(node, executed_in=None, defined_block=None):
@@ -88,7 +96,7 @@ def visit_helper(value, executed_in=None, defined_block=None):
         visit(value, executed_in=executed_in, defined_block=defined_block)
 
 
-def augment(node):
+def augment_blocks(node):
     """
     Analyze the AST add/overwrite the attributes described in the documentation.
     """

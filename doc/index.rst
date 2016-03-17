@@ -140,5 +140,5 @@ Lenatu is adding attributes to the nodes of the AST.
 	* `ast.Name.id_block`
 	* `ast.excepthandler.name_block`
 	* `ast.arg.arg_block`
-	* `ast.alias.name_block`
+	* `ast.alias.name_block` (only if `asname` is `None`)
 	* `ast.alias.asname_block`

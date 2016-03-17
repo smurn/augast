@@ -51,7 +51,7 @@ def unindent(source):
 
 id_pattern = re.compile(r"\s*[a-zA-Z0-9_]+\s*")
 subscript_pattern = re.compile(r"\[(\s*[0-9]+)\s*\]")
-filter_pattern = re.compile(r"\{(\s*[a-zA-Z0-9_]+)\s*\}")
+filter_pattern = re.compile(r"\{(\s*[a-zA-Z0-9_=]+)\s*\}")
 
 def npath(node, path):
     """
@@ -132,8 +132,13 @@ def npath(node, path):
         
         if not isinstance(node, list):
             node = [node]
-        
-        result = [n for n in node if n.__class__.__name__ == criteria]
+            
+        if "=" in criteria:
+            attr, value = criteria.split("=")
+            result = [n for n in node if str(getattr(n, attr, None)) == value]
+        else:
+            result = [n for n in node if n.__class__.__name__ == criteria]
+            
         if not result:
             raise ValueError("No node of type %r found. Nodes: %s" %(criteria, node))
         

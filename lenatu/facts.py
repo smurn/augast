@@ -87,29 +87,45 @@ NONLOCAL = "nonlocal"
 
 def _name_fields(node):
     if isinstance(node.ctx, (ast.Load, ast.AugLoad)):
-        return [("id", READ)]
+        return [("id", READ, EXEC)]
     else:
-        return [("id", ASSIGNED)]
+        return [("id", ASSIGNED, EXEC)]
 
-def alias_fields(node):
+def _alias_fields(node):
     if node.asname is None:
-        return [("name", ASSIGNED)]
+        return [("name", ASSIGNED, EXEC)]
     else:
-        return [("asname", ASSIGNED)]
+        return [("asname", ASSIGNED, EXEC)]
         
 
 #: Maps node-type to a function that takes the node (of that type) as
 #: a parameter. The function returns a list of (attribute-name, usage) tuples
 #: for each attribute of that node which is referring to a variable.
 NAME_FIELDS = {
-    ast.FunctionDef: lambda n:[("name", ASSIGNED)],
-    ast.ClassDef: lambda n:[("name", ASSIGNED)],
-    ast.Global: lambda n:[("names", GLOBAL)],
-    ast.Nonlocal: lambda n:[("names", NONLOCAL)],
+    ast.FunctionDef: lambda n:[("name", ASSIGNED, EXEC)],
+    ast.ClassDef: lambda n:[("name", ASSIGNED, EXEC)],
+    ast.Global: lambda n:[("names", GLOBAL, EXEC)],
+    ast.Nonlocal: lambda n:[("names", NONLOCAL, EXEC)],
     ast.Name: _name_fields,
-    ast.ExceptHandler: lambda n:[("name", ASSIGNED)],
-    ast.arg: lambda n:[("arg", ASSIGNED)],
-    ast.alias: alias_fields
+    ast.ExceptHandler: lambda n:[("name", ASSIGNED, EXEC)],
+    ast.arg: lambda n:[("arg", ASSIGNED, DEFINED)],
+    ast.alias: _alias_fields
 }
 
 
+def is_local_variable(usages):
+    """
+    Given the set of usages of a variable within a block, return if this
+    variable is in the scope of this block.
+    """
+    return ASSIGNED in usages and GLOBAL not in usages and NONLOCAL not in usages
+
+
+def are_locals_visible_to_childen(block):
+    """
+    Are variables that are local to the given block visible to blocks declared
+    within this block?
+    
+    This is the case for all blocks but those of classes.
+    """
+    return not isinstance(block.defined_by, ast.ClassDef)
