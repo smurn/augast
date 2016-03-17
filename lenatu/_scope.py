@@ -11,7 +11,7 @@ def _nodes_of_block(block):
         if getattr(node, "executed_in", block) is block or getattr(node, "defined_block", None) is block:
             yield node
             for child in ast.iter_child_nodes(node):
-                yield from visit(child)
+                for n in visit(child): yield n
 
     return visit(block.defined_by)
     
@@ -52,7 +52,7 @@ def _blocks_defined_in(block):
                 # the same block again.
             else:
                 for child in ast.iter_child_nodes(node):
-                    yield from visit(child)
+                    for b in visit(child): yield b
                            
     return visit(block.defined_by)
     
@@ -98,19 +98,19 @@ def _assign_scopes(block, enclosing_blocks):
         All these blocks must have `local_variables` set already.
     """
     
-    usages = collections.defaultdict(set)
+    all_usages = collections.defaultdict(set)
     for _, _, identifier, usage in _variable_accesses_in(block):
-        usages[identifier].add(usage) 
+        all_usages[identifier].add(usage) 
     
     
-    local_variables = [identifier for identifier, usages in usages.items() if facts.is_local_variable(usages)]
+    local_variables = [identifier for identifier, usages in all_usages.items() if facts.is_local_variable(usages)]
     block.local_variables = local_variables
             
     # Variables used in this block are local to one of these blocks
     candidate_blocks = enclosing_blocks + [block]
         
     # For each used variable find the block that variable is defined in.
-    scope_map = {identifier : _scope_lookup(identifier, usages, candidate_blocks) for identifier, usages in usages.items()}
+    scope_map = {identifier : _scope_lookup(identifier, usages, candidate_blocks) for identifier, usages in all_usages.items()}
 
     # Inject scopes into the AST nodes
     for node, attribute, _ , _ in _variable_accesses_in(block):

@@ -40,7 +40,8 @@ class TestScope(unittest.TestCase):
                         ".defined_block", 
                         ".**{Name}.id_block")
         
-    def test_parameter(self):
+    @tools.version("3.0+")
+    def test_parameter_arg(self):
         src = """
         def f(x):
             pass
@@ -48,6 +49,56 @@ class TestScope(unittest.TestCase):
         self.assertSame(src, 
                         ".**{FunctionDef}.defined_block", 
                         ".**{arg}.arg_block")
+       
+    @tools.version("2.0+") 
+    def test_parameter_P2(self):
+        src = """
+        def f(x):
+            pass
+        """
+        self.assertSame(src, 
+                        ".**{FunctionDef}.defined_block", 
+                        ".**{id=x}.id_block")
+    
+    @tools.version("2.0+")
+    def test_vararg_P2(self):
+        src = """
+        def f(*x):
+            pass
+        """
+        self.assertSame(src, 
+                        ".**{FunctionDef}.defined_block", 
+                        ".**{vararg=x}.vararg_block")
+        
+    @tools.version("3.0+")
+    def test_vararg_P3(self):
+        src = """
+        def f(*x):
+            pass
+        """
+        self.assertSame(src, 
+                        ".**{FunctionDef}.defined_block", 
+                        ".**{arg=x}.arg_block")
+        
+    @tools.version("2.0+")
+    def test_kwarg_P2(self):
+        src = """
+        def f(**x):
+            pass
+        """
+        self.assertSame(src, 
+                        ".**{FunctionDef}.defined_block", 
+                        ".**{kwarg=x}.kwarg_block")
+        
+    @tools.version("3.0+")
+    def test_kwarg_P3(self):
+        src = """
+        def f(**x):
+            pass
+        """
+        self.assertSame(src, 
+                        ".**{FunctionDef}.defined_block", 
+                        ".**{arg=x}.arg_block")
         
     def test_default(self):
         src = """
@@ -58,6 +109,7 @@ class TestScope(unittest.TestCase):
                         ".defined_block", 
                         ".**{id=y}.id_block")  
         
+    @tools.version("3.0+")
     def test_arg_annotation(self):
         src = """
         def foo(x:y):
@@ -78,6 +130,7 @@ class TestScope(unittest.TestCase):
                         ".**{name=f}.defined_block", 
                         ".**{name=g}.**{id=x}.id_block")
         
+    @tools.version("3.0+")
     def test_explict_closure(self):
         src = """
         def f():
@@ -195,6 +248,7 @@ class TestScope(unittest.TestCase):
                         ".**{name=f}.defined_block", 
                         ".**{ExceptHandler}.name_block")
         
+    @tools.version("3.0+")
     def test_except_nonlocal(self):
         src = """
         def f():

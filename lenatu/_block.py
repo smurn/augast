@@ -1,6 +1,6 @@
 from lenatu._facts import *  # @UnusedWildImport
 
-class Block:
+class Block(object):
     """
     A block is a sequence of statements that form a unit (think stack-frame). 
     

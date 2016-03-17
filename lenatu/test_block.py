@@ -153,8 +153,19 @@ class BlockDetector(unittest.TestCase):
                         ".**{GeneratorExp}.defined_block", 
                         ".**{GeneratorExp}.generators[0].executed_in")
         
-    
-    def test_arguments_args(self):
+
+    @tools.version("2.0+")
+    def test_arguments_args_args_P2(self):
+        src = """
+        def foo(x):
+            pass
+        """
+        self.assertSame(src, 
+                        ".**{FunctionDef}.defined_block", 
+                        ".**{FunctionDef}.args.args[0].executed_in")
+        
+    @tools.version("3.0+")
+    def test_arguments_args_args_P3(self):
         src = """
         def foo(x):
             pass
@@ -166,6 +177,8 @@ class BlockDetector(unittest.TestCase):
                         ".**{FunctionDef}.executed_in", 
                         ".**{FunctionDef}.args.args[0].executed_in")
         
+        
+    @tools.version("3.0+")
     def test_arguments_vararg(self):
         src = """
         def foo(*x):
@@ -178,6 +191,7 @@ class BlockDetector(unittest.TestCase):
                         ".**{FunctionDef}.executed_in", 
                         ".**{FunctionDef}.args.vararg.executed_in")
         
+    @tools.version("3.0+")
     def test_arguments_kwonlyargs(self):
         src = """
         def foo(*x, a):
@@ -190,7 +204,21 @@ class BlockDetector(unittest.TestCase):
                         ".**{FunctionDef}.executed_in", 
                         ".**{FunctionDef}.args.kwonlyargs[0].executed_in")
                 
-    def test_arguments_kwarg(self):
+
+    def test_arguments_args(self):
+        src = """
+        def foo(**x):
+            pass
+        """
+        self.assertSame(src, 
+                        ".**{FunctionDef}.defined_block", 
+                        ".**{FunctionDef}.args.defined_block")
+        self.assertSame(src, 
+                        ".**{FunctionDef}.executed_in", 
+                        ".**{FunctionDef}.args.executed_in")
+        
+    @tools.version("3.0+")
+    def test_arguments_args_kwarg(self):
         src = """
         def foo(**x):
             pass
@@ -202,6 +230,7 @@ class BlockDetector(unittest.TestCase):
                         ".**{FunctionDef}.executed_in", 
                         ".**{FunctionDef}.args.kwarg.executed_in")
         
+    @tools.version("3.0+")
     def test_arg_annotation(self):
         src = """
         def foo(x:1+2):

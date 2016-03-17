@@ -88,3 +88,26 @@ class TestNPath(unittest.TestCase):
         expected = [f, e1, a1, e2, a2]
         actual =  tools.npath(n, ".**")
         self.assertEqual(expected, actual)
+        
+class TestVersion(unittest.TestCase):
+    
+    def test_exact(self):
+        self.assertTrue(tools.version("2.5.3", (2,5,3))(True))
+        
+        self.assertFalse(tools.version("2.5.3", (2,5,2))(True))
+        self.assertFalse(tools.version("2.5.3", (2,5,4))(True))
+        
+    def test_plus(self):
+        self.assertTrue(tools.version("2.6+", (2,6,0))(True))
+        self.assertTrue(tools.version("2.6+", (2,6,1))(True))
+        self.assertTrue(tools.version("2.6+", (2,7,0))(True))
+        
+        self.assertFalse(tools.version("2.6+", (2,5,99))(True))
+        self.assertFalse(tools.version("2.6+", (3,0,0))(True))
+        
+    def test_multiple(self):
+        self.assertTrue(tools.version("2.6+ 3.3+", (2,6,0))(True))
+        self.assertTrue(tools.version("2.6+ 3.3+", (3,3,0))(True))
+        self.assertFalse(tools.version("2.6+ 3.3+", (3,2,0))(True))
+        
+        

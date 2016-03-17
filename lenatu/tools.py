@@ -1,5 +1,7 @@
 import re
 import ast
+import sys
+
 def unindent(source):
     """
     Removes the indentation of the source code that is common to all lines.
@@ -177,4 +179,43 @@ def npath(node, path):
     
     return npath(nxt, path[pos:])
         
+
+def version(supported_versions, version=sys.version_info):
+    """
+    Decorator for tests that should only run on some versions of Python.
+    
+    @version("2.7+")
+    def test():
+        # runs on 2.7.0, 2.7.1, ..., 2.8.0, 2.8.1, ...
+        # but not on 3.x
+    
+    @version("2.7+ 3.3+")
+    def test():
+        # runs on both 2.7 and newer and 3.3 and newer.
         
+    
+    """
+    match = False
+    for cond in supported_versions.split():
+        c_match = True
+        for i, number in enumerate(cond.split(".")):
+            plus = number[-1] == "+"
+            if plus: 
+                number = number[:-1]
+            number = int(number)
+            if not plus:
+                c_match = c_match and version[i] == number
+            else:
+                c_match = c_match and version[i] >= number
+        match = match or c_match
+    
+    def wrapper_factory(f):
+        if match:
+            return f
+        else:
+            return None
+        
+    return wrapper_factory
+        
+        
+    
