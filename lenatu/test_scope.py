@@ -300,6 +300,19 @@ class TestScope(unittest.TestCase):
                         ".**{name=f}.defined_block", 
                         ".**{GeneratorExp}.generators.**{id=y}.id_block")
         
+    def test_with(self):
+        src = """
+        def f():
+            with x as y:
+                pass
+        """
+        self.assertSame(src, 
+                        ".**{name=f}.defined_block", 
+                        ".**{id=y}.id_block")
+        self.assertSame(src, 
+                        ".defined_block", 
+                        ".**{id=x}.id_block")
+        
         
     def get(self, src, path):
         node = self.parse(src)
